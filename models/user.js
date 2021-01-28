@@ -1,67 +1,62 @@
 "use strict";
-
-const Sequelize = require("sequelize");
+const { Model, DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  class User extends Sequelize.Model {}
+  class User extends Model {}
   User.init(
     {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
       firstName: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         validate: {
           notNull: {
-            msg: "Please provide a first name.",
+            msg: "A first name is required",
           },
           notEmpty: {
-            msg: "Please provide a first name.",
+            msg: "Please provide a first name",
           },
         },
       },
       lastName: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         validate: {
           notNull: {
-            msg: "Please provide a last name.",
+            msg: "A last name is required",
           },
           notEmpty: {
-            msg: "Please provide a last name.",
+            msg: "Please provide a last name",
           },
         },
       },
-      email: {
-        type: Sequelize.STRING,
+      emailAddress: {
+        type: DataTypes.STRING,
         allowNull: false,
         unique: {
-          msg: "The email you have provided is already in use.",
+          msg: "The email you entered already exists",
         },
         validate: {
           notNull: {
-            msg: "Please provide an email address.",
-          },
-          isEmail: {
-            msg: "Email addres provided is not valid.",
+            msg: "A email is required",
           },
           notEmpty: {
-            msg: "Please provide an email address.",
+            msg: "Please provide a email",
           },
         },
       },
       password: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
         validate: {
           notNull: {
-            msg: "Please provide a password.",
+            msg: "A password is required",
           },
           notEmpty: {
-            msg: "Please provide a password.",
+            msg: "Please provide a password",
+          },
+          len: {
+            args: [8, 20],
+            msg: "The password should be between 8 and 20 characters in length",
           },
         },
       },
@@ -70,20 +65,7 @@ module.exports = (sequelize) => {
   );
 
   User.associate = (models) => {
-    User.hasMany(models.Course, {
-      foreignKey: {
-        fieldName: "userId",
-        allowNull: false,
-        validate: {
-          notNull: {
-            msg: "Please provide a User ID.",
-          },
-          notEmpty: {
-            msg: "Please provide a User ID.",
-          },
-        },
-      },
-    });
+    User.hasMany(models.Course);
   };
 
   return User;

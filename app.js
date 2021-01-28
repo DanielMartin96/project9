@@ -3,23 +3,10 @@
 // load modules
 const express = require("express");
 const morgan = require("morgan");
-const userRoutes = require("./routes/user");
 const { Sequelize } = require("sequelize");
-
 const sequelize = new Sequelize("sqlite::memory:");
-
-(async () => {
-  try {
-    // Test connection to the database
-    await sequelize.authenticate();
-    console.log("Connection to the database succesful.");
-    // Sync models
-    await sequelize.sync();
-    console.log("Syncing models with the database.");
-  } catch (error) {
-    console.error("Error connecting to the database:", error);
-  }
-})();
+const userRoutes = require("./routes/users");
+const courseRoutes = require("./routes/courses");
 
 // variable to enable global error logging
 const enableGlobalErrorLogging =
@@ -28,11 +15,25 @@ const enableGlobalErrorLogging =
 // create the Express app
 const app = express();
 
+// Authenitcate dasabase connection
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("Connection has been established successfully.");
+  } catch (error) {
+    console.error("Unable to connect to the database:", error);
+  }
+})();
+
 // Setup request body JSON parsing.
 app.use(express.json());
 
 // setup morgan which gives us http request logging
 app.use(morgan("dev"));
+
+// import routes
+app.use("/api/users", userRoutes);
+app.use("/api/courses", courseRoutes);
 
 // setup a friendly greeting for the root route
 app.get("/", (req, res) => {
@@ -40,9 +41,6 @@ app.get("/", (req, res) => {
     message: "Welcome to the REST API project!",
   });
 });
-
-// Add routes
-app.use("/api/users", userRoutes);
 
 // send 404 if no other route matched
 app.use((req, res) => {
