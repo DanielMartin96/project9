@@ -21,4 +21,42 @@ router.post("/", async (req, res) => {
   }
 });
 
+// get course with id
+router.get("/:id", async (req, res) => {
+  try {
+    const course = await Course.findByPk(req.path.substring(1));
+
+    res.status(200).json(course);
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+// edit course with id
+router.put("/:id"),
+  async (req, res) => {
+    try {
+      const course = await Course.update(req.body, {
+        where: { id: req.path.substring(1) },
+      });
+
+      res.status(204).json(course);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+// delete course with id
+router.delete("/:id", async (req, res) => {
+  try {
+    const course = await Course.findByPk(req.path.substring(1));
+
+    course.destroy();
+
+    res.status(204);
+  } catch (err) {
+    console.error(err);
+  }
+});
+
 module.exports = router;
