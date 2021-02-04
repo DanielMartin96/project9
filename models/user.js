@@ -5,11 +5,6 @@ module.exports = (sequelize) => {
   class User extends Model {}
   User.init(
     {
-      userId: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-      },
       firstName: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -71,7 +66,7 @@ module.exports = (sequelize) => {
 
   User.associate = (models) => {
     User.hasMany(models.Course, {
-      foreignKey: "userId",
+      foreignKey: "id",
     });
   };
 
