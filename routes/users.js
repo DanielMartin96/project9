@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
+
 const { User } = require("../models");
+const { authenticateUser } = require("../middleware/auth-user");
 
 // get authenticated user
-router.get("/", (req, res) => {
+router.get("/", authenticateUser, async (req, res) => {
   const user = req.currentUser;
 
   res.status(200).json({ emailAddress: user.emailAddress });
@@ -17,7 +19,17 @@ router.post("/", async (req, res) => {
     res.location("/");
     res.status(201).end();
   } catch (err) {
-    console.error(err);
+    console.log("ERROR: ", err.name);
+
+    if (
+      err.name === "SequelizeValidationError" ||
+      err.name === "SequelizeUniqueConstraintError"
+    ) {
+      const errors = err.errors.map((err) => err.message);
+      res.status(400).json({ errors });
+    } else {
+      throw err;
+    }
   }
 });
 
