@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { Course } = require("../models");
+const { User, Course } = require("../models");
 const { authenticateUser } = require("../middleware/auth-user");
+const auth = require("basic-auth");
 
 // get courses
 router.get("/", async (req, res) => {
@@ -13,10 +14,17 @@ router.get("/", async (req, res) => {
 // create new course
 router.post("/", authenticateUser, async (req, res) => {
   try {
-    await Course.create(req.body);
+    const credentials = auth(req);
+    const user = await User.findOne({
+      where: {
+        emailAddress: credentials.name,
+      },
+    });
+    const userId = user.id;
+    req.body.userId = userId;
 
-    res.location(`api/courses/${req.path}`);
-    res.status(201).end();
+    const newCourse = await Course.create(req.body);
+    res.location(`/courses/${newCourse.id}`).status(201).end();
   } catch (err) {
     console.log("ERROR: ", err.name);
 
@@ -35,8 +43,22 @@ router.post("/", authenticateUser, async (req, res) => {
 // get course with id
 router.get("/:id", async (req, res) => {
   try {
-    const course = await Course.findByPk(req.path.substring(1));
-
+    const course = await Course.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: "User",
+          attributes: ["id", "firstName", "lastName", "emailAddress"],
+        },
+      ],
+      attributes: [
+        "id",
+        "title",
+        "description",
+        "estimatedTime",
+        "materialsNeeded",
+      ],
+    });
     res.status(200).json(course);
   } catch (err) {
     console.error(err);
@@ -45,24 +67,24 @@ router.get("/:id", async (req, res) => {
 
 // edit course with id
 router.put("/:id", authenticateUser, async (req, res) => {
-  try {
+  const errors = [];
+
+  if (!req.body.title) {
+    errors.push("Please provide a title");
+  }
+
+  if (!req.body.description) {
+    errors.push("Please provide a description");
+  }
+
+  if (errors.length > 0) {
+    res.status(400).json({ errors });
+  } else {
     await Course.update(req.body, {
       where: { id: req.path.substring(1) },
     });
 
     res.status(204).json();
-  } catch (err) {
-    console.log("ERROR: ", err.name);
-
-    if (
-      err.name === "SequelizeValidationError" ||
-      err.name === "SequelizeUniqueConstraintError"
-    ) {
-      const errors = err.errors.map((err) => err.message);
-      res.status(400).json({ errors });
-    } else {
-      throw err;
-    }
   }
 });
 
@@ -73,7 +95,7 @@ router.delete("/:id", authenticateUser, async (req, res) => {
 
     course.destroy();
 
-    res.status(204);
+    res.status(204).end();
   } catch (err) {
     console.error(err);
   }

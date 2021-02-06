@@ -7,8 +7,11 @@ const { authenticateUser } = require("../middleware/auth-user");
 // get authenticated user
 router.get("/", authenticateUser, async (req, res) => {
   const user = req.currentUser;
-
-  res.status(200).json({ emailAddress: user.emailAddress });
+  res.json({
+    id: user.id,
+    name: `${user.firstName} ${user.lastName}`,
+    email: user.emailAddress,
+  });
 });
 
 // create new user
