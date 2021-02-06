@@ -43,23 +43,10 @@ router.post("/", authenticateUser, async (req, res) => {
 // get course with id
 router.get("/:id", async (req, res) => {
   try {
-    const course = await Course.findByPk(req.params.id, {
-      include: [
-        {
-          model: User,
-          as: "User",
-          attributes: ["id", "firstName", "lastName", "emailAddress"],
-        },
-      ],
-      attributes: [
-        "id",
-        "title",
-        "description",
-        "estimatedTime",
-        "materialsNeeded",
-      ],
-    });
-    res.status(200).json(course);
+    const course = await Course.findByPk(req.params.id);
+    const user = await User.findByPk(course.userId);
+
+    res.status(200).json({ course: course, user: user.dataValues });
   } catch (err) {
     console.error(err);
   }
