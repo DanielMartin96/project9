@@ -6,8 +6,23 @@ const auth = require("basic-auth");
 
 // get courses
 router.get("/", async (req, res) => {
-  const courses = await Course.findAll();
-
+  const courses = await Course.findAll({
+    include: [
+      {
+        model: User,
+        as: "User",
+        attributes: ["id", "firstName", "lastName", "emailAddress"],
+      },
+    ],
+    attributes: [
+      "id",
+      "title",
+      "description",
+      "estimatedTime",
+      "materialsNeeded",
+    ],
+  });
+  console.log(courses);
   res.status(200).json(courses);
 });
 

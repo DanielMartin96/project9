@@ -10,7 +10,7 @@ router.get("/", authenticateUser, async (req, res) => {
   res.json({
     id: user.id,
     name: `${user.firstName} ${user.lastName}`,
-    email: user.emailAddress,
+    emailAddress: user.emailAddress,
   });
 });
 
